@@ -27,7 +27,7 @@ Summary
 Column {data-width=650}
 -----------------------------------------------------------------------
 
-### Accuracy by crop type
+### Prediction accuracy (F-Score) by crop type
 
 ```{r}
 unique_cities = df$city_name_eng %>% unique
@@ -66,7 +66,7 @@ p1 <- acc_df %>%
   scale_fill_calc()+
   labs(y = "Accuracy",
        x = "",
-       title = "Prediction Accuracy (F-Score)")
+       title = "")
 ggplotly(p1)
 ```
 
@@ -74,7 +74,7 @@ ggplotly(p1)
 Column {data-width=500}
 -----------------------------------------------------------------------
 
-### Test sample size
+### Test sample size in Turkey
 
 ```{r}
 ss <- df %>% 
@@ -86,12 +86,12 @@ ss <- df %>%
   coord_flip()+
   labs(y = "Sample Size",
        x = "",
-       title = "Test Sample Size in Turkey")
+       title = "")
 ggplotly(ss)
 
 ```
 
-### Accuracy - Sample Size
+### Correlation between sample size and prediction accuracy
 
 ```{r}
 library(RColorBrewer)
@@ -121,7 +121,7 @@ graph <- df %>%
   scale_color_manual(values = col_vector)+
   labs(y = "Accuracy",
        x = "Log Sample Size",
-       title = "Correlation between sample size and prediction accuracy")
+       title = "")
 ggplotly(graph)
 
 ```

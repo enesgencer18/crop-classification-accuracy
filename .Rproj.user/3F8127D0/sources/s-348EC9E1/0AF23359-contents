@@ -1,0 +1,121 @@
+---
+title: "Crop Classification - Accuracy Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+library(flexdashboard)
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+library(ggthemes)
+library(rstudioapi) 
+load("~/crop-classification-accuracy/processed_data/df.RDS")
+
+```
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### High Accuracy
+
+```{r}
+unique_cities = df$city_name_eng %>% unique
+unique_crops = df$prediction %>% unique
+acc_df <- tibble(city = unique_crops, sensitivity = NA, precision = NA)
+acc_df$precision = map_dbl(1:length(unique_crops), .f = function(i){ 
+                                x <- df %>% 
+                                      filter(prediction == unique_crops[i])
+                                true_preds <- x %>% 
+                                  filter(prediction == true_value) %>% 
+                                  nrow()
+                                n <- nrow(x)
+                                acc <- true_preds/n
+                                acc})
+acc_df$sensitivity = map_dbl(1:length(unique_crops), .f = function(i){ 
+                                x <- df %>% 
+                                      filter(true_value == unique_crops[i])
+                                true_preds <- x %>% 
+                                  filter(prediction == true_value) %>% 
+                                  nrow()
+                                n <- nrow(x)
+                                acc <- true_preds/n
+                                acc})
+
+acc_df <- acc_df %>% 
+  mutate(f_score = (2*precision*sensitivity)/(precision+sensitivity))
+
+p1 <- acc_df %>% 
+  mutate(high = ifelse(f_score > 0.75, "High Accuracy", "Low Accuracy")) %>% 
+  ggplot(aes(x = reorder(city, f_score), y = f_score, fill = high))+
+  geom_col(show.legend = NULL, alpha = 1, width = 0.4)+
+  theme_minimal()+
+  coord_flip()+
+  scale_y_continuous(label = scales::percent)+
+  facet_wrap(~high, scales = "free")+
+  scale_fill_tableau()+
+  labs(y = "Accuracy",
+       x = "",
+       title = "Prediction Accuracy (F-Score)")
+ggplotly(p1)
+```
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Chart B
+
+```{r}
+ss <- df %>% 
+  filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField")) %>% 
+  count(true_value, sort = TRUE) %>% 
+  ggplot(aes(x = reorder(true_value, n), y = n))+
+  geom_col(show.legend = NULL, width = 0.4, alpha = 1, fill = "steelblue")+
+  theme_pander()+
+  coord_flip()+
+  labs(y = "Sample Size",
+       x = "",
+       title = "Test Sample Size in Turkey")
+ggplotly(ss)
+
+```
+
+### Chart C
+
+```{r}
+library(RColorBrewer)
+n <- length(unique_crops)
+qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+
+graph <- df %>%
+  filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField")) %>%
+  count(true_value, sort = TRUE) %>%
+  left_join(acc_df %>%
+              rename(true_value = city) %>%
+              filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField")),
+            by = "true_value") %>%
+  ggplot(aes(x = log(n), y = f_score)) +
+  geom_point(
+    aes(x = log(n), 
+        y = f_score, 
+        color = true_value),
+    show.legend = NULL,
+    alpha = 1,
+    size = 2
+  ) +
+  geom_smooth(se = FALSE, method = "glm", color = "steelblue") +
+  theme_classic() +
+  scale_color_manual(values = col_vector)+
+  labs(y = "Accuracy",
+       x = "Log Sample Size",
+       title = "Correlation between sample size and prediction accuracy")
+ggplotly(graph)
+
+```
+

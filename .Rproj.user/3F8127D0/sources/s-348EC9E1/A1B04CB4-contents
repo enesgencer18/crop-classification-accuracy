@@ -1,0 +1,198 @@
+---
+title: "Crop Classification - Accuracy Dashboard"
+output: 
+  flexdashboard::flex_dashboard:
+    theme: 
+      version: 4
+      bootswatch: flatly
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+rm(list = ls())
+library(flexdashboard)
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+library(ggthemes)
+library(rstudioapi) 
+load("~/crop-classification-accuracy/processed_data/df.RDS")
+
+```
+
+Summary
+=====================================
+
+Column {data-width=650}
+-----------------------------------------------------------------------
+
+### Accuracy by crop type
+
+```{r}
+unique_cities = df$city_name_eng %>% unique
+unique_crops = df$prediction %>% unique
+acc_df <- tibble(city = unique_crops, sensitivity = NA, precision = NA)
+acc_df$precision = map_dbl(1:length(unique_crops), .f = function(i){ 
+                                x <- df %>% 
+                                      filter(prediction == unique_crops[i])
+                                true_preds <- x %>% 
+                                  filter(prediction == true_value) %>% 
+                                  nrow()
+                                n <- nrow(x)
+                                acc <- true_preds/n
+                                acc})
+acc_df$sensitivity = map_dbl(1:length(unique_crops), .f = function(i){ 
+                                x <- df %>% 
+                                      filter(true_value == unique_crops[i])
+                                true_preds <- x %>% 
+                                  filter(prediction == true_value) %>% 
+                                  nrow()
+                                n <- nrow(x)
+                                acc <- true_preds/n
+                                acc})
+
+acc_df <- acc_df %>% 
+  mutate(f_score = (2*precision*sensitivity)/(precision+sensitivity))
+
+p1 <- acc_df %>% 
+  mutate(high = ifelse(f_score > 0.75, "High Accuracy", "Low Accuracy")) %>% 
+  ggplot(aes(x = reorder(city, f_score), y = f_score, fill = high))+
+  geom_col(show.legend = NULL, alpha = 0.75, width = 0.35)+
+  theme_minimal()+
+  coord_flip()+
+  scale_y_continuous(label = scales::percent)+
+  facet_wrap(~high, scales = "free")+
+  scale_fill_calc()+
+  labs(y = "Accuracy",
+       x = "",
+       title = "Prediction Accuracy (F-Score)")
+ggplotly(p1)
+```
+
+
+Column {data-width=500}
+-----------------------------------------------------------------------
+
+### Test sample size
+
+```{r}
+ss <- df %>% 
+  filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField")) %>% 
+  count(true_value, sort = TRUE) %>% 
+  ggplot(aes(x = reorder(true_value, n), y = n))+
+  geom_col(show.legend = NULL, width = 0.4, alpha = 0.8, fill = "steelblue")+
+  theme_pander()+
+  coord_flip()+
+  labs(y = "Sample Size",
+       x = "",
+       title = "Test Sample Size in Turkey")
+ggplotly(ss)
+
+```
+
+### Accuracy - Sample Size
+
+```{r}
+library(RColorBrewer)
+n <- length(unique_crops)
+qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+
+graph <- df %>%
+  filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField")) %>%
+  count(true_value, sort = TRUE) %>%
+  left_join(acc_df %>%
+              rename(true_value = city) %>%
+              filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField")),
+            by = "true_value") %>%
+  ggplot(aes(x = log(n), y = f_score)) +
+  geom_point(
+    aes(x = log(n), 
+        y = f_score, 
+        color = true_value),
+    show.legend = NULL,
+    alpha = 1,
+    size = 2
+  ) +
+  geom_ribbon(stat='smooth', method = "glm", se=TRUE, alpha=0.05) +
+  geom_line(stat='smooth', method = "glm", alpha=1, color = "steelblue")+
+  theme_classic() +
+  scale_color_manual(values = col_vector)+
+  labs(y = "Accuracy",
+       x = "Log Sample Size",
+       title = "Correlation between sample size and prediction accuracy")
+ggplotly(graph)
+
+```
+
+Confusion Matrix {data-orientation=rows}
+=====================================
+
+Row 
+-----------------------------------------------------------------------
+
+### Accuracy
+
+```{r}
+library(caret)
+uniqe_true <- df$true_value %>% unique
+unique_pred <- df$prediction %>% unique
+unique_all <- c(uniqe_true, unique_pred) %>% unique
+unique_all <- unique_all[1:22]
+
+df_factor <- df %>% 
+  filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField")) %>% 
+  filter(!prediction %in% c("Agricultural_Soil", "Other", "NotField")) %>% 
+  mutate(true_value = factor(true_value, unique_all)) %>% 
+  mutate(prediction = factor(prediction, unique_all))
+
+res <- caret::confusionMatrix(factor(df$true_value, unique_all), 
+                              factor(df$prediction, unique_all))
+accuracy <- round(as.numeric(res$overall[1]) * 100,1)
+gauge(accuracy, min = 0, max = 100, symbol = '%', gaugeSectors(
+  success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+))
+```
+
+### F-Score
+
+```{r}
+f_score <- round(as.numeric(yardstick::f_meas_vec(df_factor$true_value, df_factor$prediction, estimator = "macro_weighted")) * 100,1) 
+gauge(f_score, min = 0, max = 100, symbol = '%', gaugeSectors(
+  success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+))
+```
+
+### Kappa
+
+```{r}
+kappa <- round(as.numeric(res$overall[2]) * 100,1)
+gauge(kappa, min = 0, max = 100, symbol = '%', gaugeSectors(
+  success = c(80, 100), warning = c(40, 79), danger = c(0, 39)
+))
+```
+
+Row 
+-----------------------------------------------------------------------
+
+### Confusion Matrix
+```{r}
+library(caret)
+uniqe_true <- df$true_value %>% unique
+unique_pred <- df$prediction %>% unique
+unique_all <- c(uniqe_true, unique_pred) %>% unique
+unique_all <- unique_all[1:22]
+
+df_factor <- df %>% 
+  filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField")) %>% 
+  filter(!prediction %in% c("Agricultural_Soil", "Other", "NotField")) %>% 
+  mutate(true_value = factor(true_value, unique_all)) %>% 
+  mutate(prediction = factor(prediction, unique_all))
+
+p2 <- autoplot(yardstick::conf_mat(df_factor, true_value, prediction), type = "heatmap")+
+  scale_fill_continuous_tableau()
+
+ggplotly(p2)
+```
+

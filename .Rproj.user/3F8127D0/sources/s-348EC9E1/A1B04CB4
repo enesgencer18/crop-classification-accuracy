@@ -1,0 +1,27 @@
+{
+    "id": "A1B04CB4",
+    "path": "~/crop-classification-accuracy/index.Rmd",
+    "project_path": "index.Rmd",
+    "type": "r_markdown",
+    "hash": "199624070",
+    "contents": "",
+    "dirty": false,
+    "created": 1643609882846.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "160,122",
+        "scrollLine": "134",
+        "last_setup_crc32": "348EC9E1455f37fa"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1643617261,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1643617261932,
+    "read_only": false,
+    "read_only_alternatives": []
+}

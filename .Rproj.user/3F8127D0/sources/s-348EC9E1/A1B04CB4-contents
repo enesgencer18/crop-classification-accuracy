@@ -1,5 +1,5 @@
 ---
-title: "Crop Classification - Accuracy Dashboard"
+title: "Crop Classification - Performance Dashboard"
 output: 
   flexdashboard::flex_dashboard:
     theme: 

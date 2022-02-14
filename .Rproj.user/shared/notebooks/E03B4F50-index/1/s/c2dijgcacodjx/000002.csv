@@ -1,6 +1,16 @@
-"0","as.numeric(res$overall[1]) * 100
+"0","library(caret)
 "
-"1","[1]"
-"1"," 79.26314"
-"1","
+"2","Warning:"
+"2"," package ‘caret’ was built under R version 4.1.1
+"
+"2","Loading required package: lattice
+"
+"2","
+Attaching package: ‘caret’
+
+"
+"2","The following object is masked from ‘package:purrr’:
+
+    lift
+
 "

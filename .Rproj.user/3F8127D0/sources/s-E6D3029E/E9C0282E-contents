@@ -60,9 +60,7 @@ df <- df %>%
                                 true_value == 96 ~ "Orchard",
                                 true_value == 97 ~ "NotField",
                                 true_value == 98 ~ "Other",
-                                true_value == 99 ~ "Agricultural_Soil",
-                                true_value == 105 ~ "Olive",
-                                true_value == 116 ~ "Citrus")) %>% 
+                                true_value == 99 ~ "Agricultural_Soil")) %>% 
   mutate(prediction = case_when(prediction == 41 ~ "Wheat",
                                 prediction == 12 ~ "Sunflower",
                                 prediction == 13 ~ "Pepper",
@@ -87,8 +85,6 @@ df <- df %>%
                                 prediction == 96 ~ "Orchard",
                                 prediction == 97 ~ "NotField",
                                 prediction == 98 ~ "Other",
-                                prediction == 99 ~ "Agricultural_Soil",
-                                prediction == 105 ~ "Olive",
-                                prediction == 116 ~ "Citrus"))
+                                prediction == 99 ~ "Agricultural_Soil"))
 
 save(list = "df", file = "~/crop-classification-accuracy/processed_data/df.RDS")

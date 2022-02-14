@@ -8,7 +8,7 @@ library(rstudioapi)
 setwd(dirname(getActiveDocumentContext()$path))
 
 # File name
-file_name = "TURKEY_TEST_2021_v01.xlsx"
+file_name = "TURKEY_TEST_2021_v02.xlsx"
 
 # Read xlsx document
 df <- readxl::read_excel(paste0("~/crop-classification-accuracy/raw_data/", file_name))
@@ -60,7 +60,9 @@ df <- df %>%
                                 true_value == 96 ~ "Orchard",
                                 true_value == 97 ~ "NotField",
                                 true_value == 98 ~ "Other",
-                                true_value == 99 ~ "Agricultural_Soil")) %>% 
+                                true_value == 99 ~ "Agricultural_Soil",
+                                true_value == 105 ~ "Olive",
+                                true_value == 116 ~ "Citrus")) %>% 
   mutate(prediction = case_when(prediction == 41 ~ "Wheat",
                                 prediction == 12 ~ "Sunflower",
                                 prediction == 13 ~ "Pepper",
@@ -85,6 +87,8 @@ df <- df %>%
                                 prediction == 96 ~ "Orchard",
                                 prediction == 97 ~ "NotField",
                                 prediction == 98 ~ "Other",
-                                prediction == 99 ~ "Agricultural_Soil"))
+                                prediction == 99 ~ "Agricultural_Soil",
+                                prediction == 105 ~ "Olive",
+                                prediction == 116 ~ "Citrus"))
 
 save(list = "df", file = "~/crop-classification-accuracy/processed_data/df.RDS")

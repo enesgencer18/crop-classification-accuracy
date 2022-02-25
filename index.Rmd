@@ -56,15 +56,6 @@ acc_df$sensitivity = map_dbl(1:length(unique_crops), .f = function(i){
 acc_df <- acc_df %>% 
   mutate(f_score = (2*precision*sensitivity)/(precision+sensitivity))
 
-acc_df <- acc_df %>% 
-  mutate(f_score = case_when(f_score > 0.95 ~ f_score,
-                             f_score > 0.75 ~ f_score * 1.05,
-                             TRUE ~ f_score * 1.10))
-
-acc_df[acc_df$city == "Corn", "f_score"] = 0.967517
-acc_df[acc_df$city == "Onion", "f_score"] = 0.70934
-acc_df[acc_df$city == "Bean", "f_score"] = 0.73934
-acc_df[acc_df$city == "Sunflower", "f_score"] = 0.81236
 
 p1 <- acc_df %>% 
   mutate(high = ifelse(f_score > 0.80, "High Accuracy", "Low Accuracy")) %>% 

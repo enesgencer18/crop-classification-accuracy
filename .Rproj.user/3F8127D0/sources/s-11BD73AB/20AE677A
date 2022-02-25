@@ -3,7 +3,7 @@
     "path": "~/crop-classification-accuracy/index.Rmd",
     "project_path": "index.Rmd",
     "type": "r_markdown",
-    "hash": "1110208470",
+    "hash": "1902952719",
     "contents": "",
     "dirty": false,
     "created": 1644924651933.0,
@@ -12,16 +12,16 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "81,0",
-        "scrollLine": "53",
+        "cursorPosition": "58,0",
+        "scrollLine": "50",
         "last_setup_crc32": "11BD73AB6ffa42a6"
     },
     "folds": "",
-    "lastKnownWriteTime": 1645785371,
+    "lastKnownWriteTime": 1645796993,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1645785371458,
+    "last_content_update": 1645796993988,
     "read_only": false,
     "read_only_alternatives": []
 }

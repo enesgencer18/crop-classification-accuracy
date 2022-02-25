@@ -18,8 +18,7 @@ library(plotly)
 library(ggthemes)
 library(rstudioapi) 
 load("~/crop-classification-accuracy/processed_data/df.RDS")
-df <- df %>% 
-  filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField"))
+
 
 ```
 

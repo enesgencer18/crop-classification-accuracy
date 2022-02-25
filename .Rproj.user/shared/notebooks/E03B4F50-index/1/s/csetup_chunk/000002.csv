@@ -6,4 +6,6 @@
 "0","library(ggthemes)"
 "0","library(rstudioapi) "
 "0","load(""~/crop-classification-accuracy/processed_data/df.RDS"")"
+"0","df <- df %>% "
+"0","  filter(!true_value %in% c(""Agricultural_Soil"", ""Other"", ""NotField""))"
 "0",""

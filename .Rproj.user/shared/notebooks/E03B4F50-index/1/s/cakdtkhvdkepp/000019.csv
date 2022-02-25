@@ -1,5 +1,0 @@
-"0","acc_df[acc_df$city == ""Corn"", f_score]
-"
-"2","Error in `[.tbl_df`(acc_df, acc_df$city == ""Corn"", f_score) : 
-  object 'f_score' not found
-"

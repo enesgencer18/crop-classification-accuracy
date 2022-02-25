@@ -1,0 +1,47 @@
+load("~/crop-classification-accuracy/processed_data/df.RDS")
+
+library(openxlsx)
+wb <- createWorkbook() 
+
+
+regions <- df$region_name_eng %>% unique()
+
+df_main = df
+for(i in seq(length(regions))){
+  
+  df <- df_main %>% 
+    filter(region_name_eng == regions[i])
+  
+  unique_cities = df$city_name_eng %>% unique
+  unique_crops = df$prediction %>% unique
+  acc_df <- tibble(city = unique_crops, sensitivity = NA, precision = NA)
+  acc_df$precision = map_dbl(1:length(unique_crops), .f = function(i){ 
+    x <- df %>% 
+      filter(prediction == unique_crops[i])
+    true_preds <- x %>% 
+      filter(prediction == true_value) %>% 
+      nrow()
+    n <- nrow(x)
+    acc <- true_preds/n
+    acc})
+  acc_df$sensitivity = map_dbl(1:length(unique_crops), .f = function(i){ 
+    x <- df %>% 
+      filter(true_value == unique_crops[i])
+    true_preds <- x %>% 
+      filter(prediction == true_value) %>% 
+      nrow()
+    n <- nrow(x)
+    acc <- true_preds/n
+    acc})
+  
+  acc_df <- acc_df %>% 
+    mutate(f_score = (2*precision*sensitivity)/(precision+sensitivity))
+  
+  ## Create the worksheets
+  addWorksheet(wb, sheetName = paste0(regions[i]))
+  writeData(wb, paste0(regions[i]), acc_df)
+  
+  
+}
+## Save workbook to working directory 
+saveWorkbook(wb, file = "Accuracy_By_Region.xlsx", overwrite = TRUE)

@@ -1,27 +1,27 @@
 {
-    "id": "DAE1B5F4",
+    "id": "20AE677A",
     "path": "~/crop-classification-accuracy/index.Rmd",
     "project_path": "index.Rmd",
     "type": "r_markdown",
-    "hash": "0",
+    "hash": "2898028109",
     "contents": "",
     "dirty": false,
-    "created": 1644223782859.0,
+    "created": 1644924651933.0,
     "source_on_save": false,
-    "relative_order": 1,
+    "relative_order": 3,
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "19,0",
-        "scrollLine": "0",
-        "last_setup_crc32": "E6D3029E455f37fa"
+        "cursorPosition": "67,24",
+        "scrollLine": "53",
+        "last_setup_crc32": "11BD73ABade0efc3"
     },
     "folds": "",
-    "lastKnownWriteTime": 1643621468,
+    "lastKnownWriteTime": 1645785059,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1644825172409,
+    "last_content_update": 1645785059858,
     "read_only": false,
     "read_only_alternatives": []
 }

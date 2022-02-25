@@ -1,10 +1,9 @@
-"0","library(flexdashboard)
-"
-"2","Warning:"
-"2"," package ‘flexdashboard’ was built under R version 4.1.2
-"
-"0","library(flexdashboard)"
-"0","library(tidyverse)"
+"0","rm(list = ls())"
 "0","library(flexdashboard)"
 "0","library(tidyverse)"
 "0","library(ggplot2)"
+"0","library(plotly)"
+"0","library(ggthemes)"
+"0","library(rstudioapi) "
+"0","load(""~/crop-classification-accuracy/processed_data/df.RDS"")"
+"0",""

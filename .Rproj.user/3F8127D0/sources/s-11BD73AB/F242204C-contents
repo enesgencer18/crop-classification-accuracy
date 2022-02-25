@@ -1,0 +1,74 @@
+rm(list = ls())
+library(tidyverse)
+library(ggplot2)
+library(plotly)
+library(ggthemes)
+library(rstudioapi) 
+
+df <- readxl::read_excel("C:/Users/egenc/Desktop/Doktar/Siniflandirma Test/TR/KONYA_GTSV06_MARMARA_G2_P1_TEST.xlsx")
+city_index <- starts_with(match = "City", vars = colnames(df))
+time_index <- starts_with(match = "Pro", vars = colnames(df))
+
+if(colnames(df)[time_index] == "ProcessIdP1"){
+  colnames(df)[time_index] <- "ProcessIdP3"
+}
+
+if(colnames(df)[city_index] == "CityNameTr"){
+  colnames(df)[city_index] <- "CityNameEng"
+}  
+
+df <- df %>% 
+  janitor::clean_names() %>% 
+  rename(true_value = process_id_p3,
+         prediction = majority) %>% 
+  select(id, region_name_eng, city_name_eng, true_value, prediction)
+
+unique_cities = df$city_name_eng %>% unique
+unique_crops = df$prediction %>% unique
+acc_df <- tibble(city = unique_crops, sensitivity = NA, precision = NA)
+acc_df$precision = map_dbl(1:length(unique_crops), .f = function(i){ 
+  x <- df %>% 
+    filter(prediction == unique_crops[i])
+  true_preds <- x %>% 
+    filter(prediction == true_value) %>% 
+    nrow()
+  n <- nrow(x)
+  acc <- true_preds/n
+  acc})
+acc_df$sensitivity = map_dbl(1:length(unique_crops), .f = function(i){ 
+  x <- df %>% 
+    filter(true_value == unique_crops[i])
+  true_preds <- x %>% 
+    filter(prediction == true_value) %>% 
+    nrow()
+  n <- nrow(x)
+  acc <- true_preds/n
+  acc})
+
+acc_df <- acc_df %>% 
+  mutate(f_score = (2*precision*sensitivity)/(precision+sensitivity))
+
+p1 <- acc_df %>% 
+  mutate(high = ifelse(f_score > 0.75, "High Accuracy", "Low Accuracy")) %>% 
+  ggplot(aes(x = reorder(city, f_score), y = f_score, fill = high))+
+  geom_col(show.legend = NULL, alpha = 0.75, width = 0.35)+
+  theme_minimal()+
+  coord_flip()+
+  scale_y_continuous(label = scales::percent)+
+  facet_wrap(~high, scales = "free")+
+  scale_fill_calc()+
+  labs(y = "Accuracy",
+       x = "",
+       title = "")
+ggplotly(p1)
+
+
+unique_true <- df$true_value %>% unique
+unique_pred <- df$prediction %>% unique
+unique_all <- c(unique_true, unique_pred) %>% unique
+
+df_factor <- df %>% 
+  mutate(true_value = factor(true_value, unique_all)) %>% 
+  mutate(prediction = factor(prediction, unique_all))
+
+caret::confusionMatrix(df_factor$prediction, df_factor$true_value)

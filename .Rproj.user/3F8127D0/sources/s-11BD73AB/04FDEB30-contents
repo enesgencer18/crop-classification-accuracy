@@ -17,6 +17,7 @@ library(ggplot2)
 library(plotly)
 library(ggthemes)
 library(rstudioapi) 
+library(RColorBrewer)
 load("~/crop-classification-accuracy/processed_data/df.RDS")
 
 ```
@@ -55,9 +56,16 @@ acc_df$sensitivity = map_dbl(1:length(unique_crops), .f = function(i){
 acc_df <- acc_df %>% 
   mutate(f_score = (2*precision*sensitivity)/(precision+sensitivity))
 
-p1 <- acc_df %>% 
+acc_df <- acc_df %>% 
   mutate(high = ifelse(f_score > 0.75, "High Accuracy", "Low Accuracy")) %>% 
-  ggplot(aes(x = reorder(city, f_score), y = f_score, fill = high))+
+  filter(high == "High Accuracy")
+
+n <- length(acc_df$city)
+qual_col_pals = brewer.pal.info[brewer.pal.info$category == 'qual',]
+col_vector = unlist(mapply(brewer.pal, qual_col_pals$maxcolors, rownames(qual_col_pals)))
+
+p1 <- acc_df %>% 
+  ggplot(aes(x = reorder(city, f_score), y = f_score, fill = city))+
   geom_col(show.legend = NULL, alpha = 0.75, width = 0.35)+
   theme_minimal()+
   coord_flip()+
@@ -66,7 +74,8 @@ p1 <- acc_df %>%
   scale_fill_calc()+
   labs(y = "Accuracy",
        x = "",
-       title = "")
+       title = "")+
+  scale_fill_manual(values =  col_vector)
 ggplotly(p1)
 ```
 
@@ -136,14 +145,11 @@ Row
 
 ```{r}
 library(caret)
-uniqe_true <- df$true_value %>% unique
+unique_true <- df$true_value %>% unique
 unique_pred <- df$prediction %>% unique
-unique_all <- c(uniqe_true, unique_pred) %>% unique
-unique_all <- unique_all[1:22]
+unique_all <- c(unique_true, unique_pred) %>% unique
 
 df_factor <- df %>% 
-  filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField")) %>% 
-  filter(!prediction %in% c("Agricultural_Soil", "Other", "NotField")) %>% 
   mutate(true_value = factor(true_value, unique_all)) %>% 
   mutate(prediction = factor(prediction, unique_all))
 
@@ -182,11 +188,8 @@ library(caret)
 uniqe_true <- df$true_value %>% unique
 unique_pred <- df$prediction %>% unique
 unique_all <- c(uniqe_true, unique_pred) %>% unique
-unique_all <- unique_all[1:22]
 
 df_factor <- df %>% 
-  filter(!true_value %in% c("Agricultural_Soil", "Other", "NotField")) %>% 
-  filter(!prediction %in% c("Agricultural_Soil", "Other", "NotField")) %>% 
   mutate(true_value = factor(true_value, unique_all)) %>% 
   mutate(prediction = factor(prediction, unique_all))
 

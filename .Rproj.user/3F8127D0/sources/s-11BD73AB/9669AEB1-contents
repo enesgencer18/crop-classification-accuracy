@@ -1,0 +1,130 @@
+rm(list = ls())
+
+library(tidyverse)
+setwd("C:/Users/egenc/Desktop/Doktar/Siniflandirma Test/TR")
+
+tuik <- readxl::read_xlsx("final_tuik.xlsx", sheet = "Sheet5") %>% 
+  janitor::clean_names() %>% 
+  rename(city = row_labels) %>% 
+  filter(!city == "Grand Total")
+doktar <- readxl::read_xlsx("Doktar.xlsx")%>% 
+  janitor::clean_names() %>% 
+  rename(city = row_labels)
+
+
+doktar$city = tolower(stringi::stri_trans_general(doktar$city, "latin-ascii"))
+tuik$city = tolower(stringi::stri_trans_general(tuik$city, "latin-ascii"))
+
+doktar_total_area <- apply(doktar[,-1], 2, sum)
+tuik_total_area <- apply(tuik[,-1], 2, sum)
+
+total_areas <- data.frame(doktar_total_area) %>% 
+  rownames_to_column() %>% 
+  left_join(tuik_total_area %>% 
+              data.frame %>% 
+              rownames_to_column, by = "rowname") %>% 
+  drop_na() %>% 
+  rename(Crop = rowname, 
+         Doktar = doktar_total_area,
+         Tuik = ".") %>% 
+  select(Crop, Tuik, Doktar) %>% 
+  mutate(Percent_Difference = Doktar/Tuik)
+
+
+canola <- tuik %>% 
+  select(city, sum_of_canola) %>% 
+  left_join(doktar %>% 
+              select(city, sum_of_canola), by = "city") %>% 
+  filter(sum_of_canola.x > 1000 | sum_of_canola.y > 1000) %>% 
+  mutate(percent_diff = sum_of_canola.y / sum_of_canola.x)
+
+rice <- tuik %>% 
+  select(city, sum_of_rice) %>% 
+  left_join(doktar %>% 
+              select(city, sum_of_rice), by = "city")%>% 
+  filter(sum_of_rice.x > 1000 | sum_of_rice.y > 1000) %>% 
+  mutate(percent_diff = sum_of_rice.y / sum_of_rice.x)
+
+
+cotton <- tuik %>% 
+  select(city, sum_of_cotton) %>% 
+  left_join(doktar %>% 
+              select(city, sum_of_cotton), by = "city") %>% 
+  filter(sum_of_cotton.x > 1000 | sum_of_cotton.y > 1000) %>% 
+  mutate(percent_diff = sum_of_cotton.y / sum_of_cotton.x)
+
+tomato <- tuik %>% 
+  select(city, sum_of_tomato) %>% 
+  left_join(doktar %>% 
+              select(city, sum_of_tomato), by = "city") %>% 
+  filter(sum_of_tomato.x > 1000 | sum_of_tomato.y > 1000) %>% 
+  mutate(percent_diff = sum_of_tomato.y / sum_of_tomato.x)
+
+wheat_barley <- tuik %>% 
+  select(city, sum_of_wheat_barley) %>% 
+  left_join(doktar %>% 
+              select(city, sum_of_wheat_barley), by = "city") %>% 
+  filter(sum_of_wheat_barley.x > 1000 | sum_of_wheat_barley.y > 1000) %>% 
+  mutate(percent_diff = sum_of_wheat_barley.y / sum_of_wheat_barley.x)
+
+
+sunflower <- tuik %>% 
+  select(city, sum_of_sunflower) %>% 
+  left_join(doktar %>% 
+              select(city, sum_of_sunflower), by = "city") %>% 
+  filter(sum_of_sunflower.x > 1000 | sum_of_sunflower.y > 1000) %>% 
+  mutate(percent_diff = sum_of_sunflower.y / sum_of_sunflower.x)
+
+
+potato <- tuik %>% 
+  select(city, sum_of_potato) %>% 
+  left_join(doktar %>% 
+              select(city, sum_of_potato), by = "city") %>% 
+  filter(sum_of_potato.x > 1000 | sum_of_potato.y > 1000) %>% 
+  mutate(percent_diff = sum_of_potato.y / sum_of_potato.x)
+
+
+tobacco <- tuik %>% 
+  select(city, sum_of_tobacco) %>% 
+  left_join(doktar %>% 
+              select(city, sum_of_tobacco), by = "city") %>% 
+  filter(sum_of_tobacco.x > 1000 | sum_of_tobacco.y > 1000) %>% 
+  mutate(percent_diff = sum_of_tobacco.y / sum_of_tobacco.x)
+
+citrus <- tuik %>% 
+  select(city, sum_of_citrus) %>% 
+  left_join(doktar %>% 
+              select(city, sum_of_citrus), by = "city") %>% 
+  filter(sum_of_citrus.x > 1000 | sum_of_citrus.y > 1000) %>% 
+  mutate(percent_diff = sum_of_citrus.y / sum_of_citrus.x)
+
+library(openxlsx)
+wb <- createWorkbook() 
+
+## Create the worksheets
+addWorksheet(wb, sheetName = "Total Area")
+addWorksheet(wb, sheetName = "Canola")
+addWorksheet(wb, sheetName = "Cotton")
+addWorksheet(wb, sheetName = "Potato")
+addWorksheet(wb, sheetName = "Rice")
+addWorksheet(wb, sheetName = "Sunflower")
+addWorksheet(wb, sheetName = "Tobacco")
+addWorksheet(wb, sheetName = "Tomato")
+addWorksheet(wb, sheetName = "Wheat-Barley")
+
+
+## Write the data
+writeData(wb, "Total Area", total_areas)
+writeData(wb, "Canola", canola)
+writeData(wb, "Cotton", cotton)
+writeData(wb, "Potato", potato)
+writeData(wb, "Rice", rice)
+writeData(wb, "Sunflower", sunflower)
+writeData(wb, "Tobacco", tobacco)
+writeData(wb, "Tomato", tomato)
+writeData(wb, "Wheat-Barley", wheat_barley)
+
+
+## Save workbook to working directory 
+saveWorkbook(wb, file = "Doktar_TUIK_Diff.xlsx", overwrite = TRUE)
+

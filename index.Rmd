@@ -189,6 +189,6 @@ df_factor <- df %>%
 p2 <- autoplot(yardstick::conf_mat(df_factor, true_value, prediction), type = "heatmap")+
   scale_fill_continuous_tableau()
 
-ggplotly(p2)
+ggplotly(p2) 
 ```
 
